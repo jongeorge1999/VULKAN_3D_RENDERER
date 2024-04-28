@@ -1,0 +1,1 @@
+To build in windows from cmd type "./build.bat"
