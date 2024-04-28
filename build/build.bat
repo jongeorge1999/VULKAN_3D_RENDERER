@@ -1,2 +1,2 @@
-mingw32-make VulkanTest
-VulkanTest.exe
+mingw32-make build
+vulkan.exe
