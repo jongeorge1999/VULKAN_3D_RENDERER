@@ -4,11 +4,13 @@
 #include "Pipeline.hpp"
 #include "Device.hpp"
 #include "SwapChain.hpp"
+#include "Model.hpp"
 #include <memory>
 #include <vector>
 
 class App{
     private:
+        void loadModels();
         void createPipelineLayout();
         void createPipeline();
         void createCommandBuffers();
@@ -20,6 +22,7 @@ class App{
         std::unique_ptr<Pipeline> pipeline;
         VkPipelineLayout pipelineLayout;
         std::vector<VkCommandBuffer> commandBuffers;
+        std::unique_ptr<Model> model;
 
     public:
         static constexpr int WIDTH = 1600;
