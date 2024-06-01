@@ -2,15 +2,15 @@
 
 #include "Window.hpp"
 #include "Pipeline.hpp"
+#include "Object.hpp"
 #include "Device.hpp"
 #include "SwapChain.hpp"
-#include "Model.hpp"
 #include <memory>
 #include <vector>
 
 class App{
     private:
-        void loadModels();
+        void loadObjects();
         void createPipelineLayout();
         void createPipeline();
         void createCommandBuffers();
@@ -18,6 +18,7 @@ class App{
         void drawFrame();
         void recreateSwapChain();
         void recordCommandBuffer(int imageIndex);
+        void renderObjects(VkCommandBuffer commandBuffer);
 
         Window window{WIDTH, HEIGHT, "VULKAN 3D"};
         Device device{window};
@@ -25,7 +26,7 @@ class App{
         std::unique_ptr<Pipeline> pipeline;
         VkPipelineLayout pipelineLayout;
         std::vector<VkCommandBuffer> commandBuffers;
-        std::unique_ptr<Model> model;
+        std::vector<Object> objects;
 
     public:
         static constexpr int WIDTH = 1600;
