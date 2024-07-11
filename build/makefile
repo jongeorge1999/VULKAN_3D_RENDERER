@@ -1,11 +1,15 @@
 CFLAGS = -std=c++17 -O3
-LDFLAGS = -lglfw3 -lvulkan-1
+LDFLAGSLINUX = -lglfw -lvulkan
+LDFLAGSWINDOWS = -lgfw3 -lvulkan-1
 
 buildAll:
 	build compileShaders
 
-build:
-	g++ $(CFLAGS) -I ../include -L ../lib -o vulkan ../src/*.cpp $(LDFLAGS)
+buildlinux:
+	g++ $(CFLAGS) -I ../include -L ../lib -o vulkan ../src/*.cpp $(LDFLAGSLINUX)
+
+buildwindows:
+	g++ $(CFLAGS) -I ../include -L ../lib -o vulkan ../src/*.cpp $(LDFLAGSWINDOWS)
 
 compileShaders:
 	compile.bat
