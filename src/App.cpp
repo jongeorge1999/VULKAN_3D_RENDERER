@@ -58,11 +58,11 @@ void App::run() {
 }
 
 void App::loadObjects() {
-    std::shared_ptr<Model> model = Model::createModelFromFile(device, "../models/smooth_vase.obj");
+    std::shared_ptr<Model> model = Model::createModelFromFile(device, "../models/stormtrooper.obj");
 
     auto object = Object::createObject();
     object.model = model;
-    object.transform.translation = {.0f, .0f, 2.5f};
-    object.transform.scale = glm::vec3(3.f);
+    object.transform.translation = {.0f, .5f, 2.5f};
+    object.transform.scale = glm::vec3(1.0f);
     objects.push_back(std::move(object));
 }

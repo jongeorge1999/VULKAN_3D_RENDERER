@@ -10,7 +10,7 @@
 
 struct PushConstantData {
     glm::mat4 transform{1.f};
-    alignas(16) glm::vec3 color;
+    glm::mat4 normalMatrix{1.f};
 };
 
 RenderSystem::RenderSystem(Device& device, VkRenderPass renderPass) : device{device} {
@@ -59,8 +59,9 @@ void RenderSystem::renderObjects(VkCommandBuffer commandBuffer, std::vector<Obje
         //obj.transform.rotation.x = glm::mod(obj.transform.rotation.x + 0.00005f, glm::two_pi<float>());
 
         PushConstantData push{};
-        push.color = obj.color;
-        push.transform = projectionView * obj.transform.mat4();
+        auto modelMatrix = obj.transform.mat4();
+        push.transform = projectionView * modelMatrix;
+        push.normalMatrix =obj.transform.normalMatrix();
 
         vkCmdPushConstants(commandBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(PushConstantData), &push);
         obj.model->bind(commandBuffer);
