@@ -1,6 +1,6 @@
 CFLAGS = -std=c++17 -O3
 LDFLAGSLINUX = -lglfw -lvulkan
-LDFLAGSWINDOWS = -lgfw3 -lvulkan-1
+LDFLAGSWINDOWS = -lglfw3 -lvulkan-1
 
 buildAll:
 	build compileShaders

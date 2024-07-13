@@ -1,5 +1,0 @@
-#!/bin/bash
-
-./compile.sh
-make build
-./vulkan
