@@ -42,7 +42,7 @@ void App::loadObjects() {
 
     auto triangle = Object::createObject();
     triangle.model = model;
-    triangle.color = {.1f,.8f, .1f};
+    triangle.color = {.9f,.9f, .1f};
     triangle.transform2d.translation.x = .2f;
     triangle.transform2d.scale = {2.f, .5f};
     triangle.transform2d.rotation = .25f * glm::two_pi<float>();
