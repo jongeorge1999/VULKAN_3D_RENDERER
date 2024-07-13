@@ -1,4 +1,5 @@
 #include "App.hpp"
+#include "Camera.hpp"
 #include "RenderSystem.hpp"
 #include <stdexcept>
 #include <cassert>
@@ -16,14 +17,21 @@ App::App() {
 App::~App() {}
 
 void App::run() {
-    RendererSystem renderSystem{device, renderer.getSwapChainRenderPass()};
+    RenderSystem renderSystem{device, renderer.getSwapChainRenderPass()};
+    Camera camera{};
+    // camera.setViewDirection(glm::vec3(0.f), glm::vec3(0.5f, 0.f, 1.f));
+    //camera.setViewTarget(glm::vec3(-1.f, -2.f, 2.f), glm::vec3(0.f, 0.f, 2.5f));
 
     while(!window.shouldClose()) {
         glfwPollEvents();
 
+        float aspect = renderer.getAspectRatio();
+        // camera.setOrthographicProjection(-aspect,aspect,-1,1,-1,1);
+        camera.setPerspectiveProjection(glm::radians(50.f), aspect, 0.1f, 10.f);
+
         if(auto commandBuffer = renderer.beginFrame()) {
             renderer.beginSwapChainRenderPass(commandBuffer);
-            renderSystem.renderObjects(commandBuffer, objects);
+            renderSystem.renderObjects(commandBuffer, objects, camera);
             renderer.endSwapChainRenderPass(commandBuffer);
             renderer.endFrame();
         }
@@ -95,7 +103,7 @@ void App::loadObjects() {
 
     auto cube = Object::createObject();
     cube.model = model;
-    cube.transform.translation = {.0f, .0f, .5f};
+    cube.transform.translation = {.0f, .0f, 2.5f};
     cube.transform.scale = {.5f, .5f, .5f};
     objects.push_back(std::move(cube));
 }

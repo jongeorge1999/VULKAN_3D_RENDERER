@@ -13,16 +13,16 @@ struct PushConstantData {
     alignas(16) glm::vec3 color;
 };
 
-RendererSystem::RendererSystem(Device& device, VkRenderPass renderPass) : device{device} {
+RenderSystem::RenderSystem(Device& device, VkRenderPass renderPass) : device{device} {
     createPipelineLayout();
     createPipeline(renderPass);
 }
 
-RendererSystem::~RendererSystem() {
+RenderSystem::~RenderSystem() {
     vkDestroyPipelineLayout(device.device(), pipelineLayout, nullptr);
 }
 
-void RendererSystem::createPipelineLayout() {
+void RenderSystem::createPipelineLayout() {
 
     VkPushConstantRange pushConstantRange{};
     pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
@@ -40,7 +40,7 @@ void RendererSystem::createPipelineLayout() {
     }
 }
 
-void RendererSystem::createPipeline(VkRenderPass renderPass) {
+void RenderSystem::createPipeline(VkRenderPass renderPass) {
     assert(pipelineLayout != nullptr && "Cannot create pipeline before pipeline layout");
     PipelineConfigInfo pipelineConfig{};
     Pipeline::defaultPipelineConfigInfo(pipelineConfig);
@@ -49,15 +49,18 @@ void RendererSystem::createPipeline(VkRenderPass renderPass) {
     pipeline = std::make_unique<Pipeline>(device, "../shaders/simple_shader.vert.spv", "../shaders/simple_shader.frag.spv", pipelineConfig);
 }
 
-void RendererSystem::renderObjects(VkCommandBuffer commandBuffer, std::vector<Object>& objects) {
+void RenderSystem::renderObjects(VkCommandBuffer commandBuffer, std::vector<Object>& objects, const Camera& camera) {
     pipeline->bind(commandBuffer);
-    for (auto& obj: objects ) {
+
+    auto projectionView = camera.getProjection() * camera.getView();
+
+    for (auto& obj: objects) {
         obj.transform.rotation.y = glm::mod(obj.transform.rotation.y + 0.0001f, glm::two_pi<float>());
         obj.transform.rotation.x = glm::mod(obj.transform.rotation.x + 0.00005f, glm::two_pi<float>());
 
         PushConstantData push{};
         push.color = obj.color;
-        push.transform = obj.transform.mat4();
+        push.transform = projectionView * obj.transform.mat4();
 
         vkCmdPushConstants(commandBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(PushConstantData), &push);
         obj.model->bind(commandBuffer);

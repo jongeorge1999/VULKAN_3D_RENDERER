@@ -3,20 +3,21 @@
 #include "Pipeline.hpp"
 #include "Object.hpp"
 #include "Device.hpp"
+#include "Camera.hpp"
 
 #include <memory>
 #include <vector>
 
-class RendererSystem{
+class RenderSystem{
     public:
 
-        RendererSystem(Device& device, VkRenderPass renderPass);
-        ~RendererSystem();
+        RenderSystem(Device& device, VkRenderPass renderPass);
+        ~RenderSystem();
 
-        RendererSystem(const RendererSystem&) = delete;
-        RendererSystem& operator=(const RendererSystem &) = delete;
+        RenderSystem(const RenderSystem&) = delete;
+        RenderSystem& operator=(const RenderSystem &) = delete;
 
-        void renderObjects(VkCommandBuffer commandBuffer, std::vector<Object>& objects);
+        void renderObjects(VkCommandBuffer commandBuffer, std::vector<Object>& objects, const Camera& camera);
 
     private:
         void createPipelineLayout();
