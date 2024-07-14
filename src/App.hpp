@@ -4,6 +4,7 @@
 #include "Object.hpp"
 #include "Device.hpp"
 #include "Renderer.hpp"
+#include "Descriptors.hpp"
 #include <memory>
 #include <vector>
 
@@ -23,9 +24,10 @@ class App{
     private:
         void loadObjects();
 
-        Window window{WIDTH, HEIGHT, "VULKAN 3D"};
+        Window window{WIDTH, HEIGHT, "VULKAN_3D_RENDERER"};
         Device device{window};
         Renderer renderer{window, device};
 
+        std::unique_ptr<DescriptorPool> globalPool{};
         std::vector<Object> objects;
 };
