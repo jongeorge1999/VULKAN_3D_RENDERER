@@ -53,7 +53,6 @@ void main() {
         specularLight += intensity * blinnTerm;
     }
 
-    //specular
     if(ubo.useSpec == 1) { 
         outColor = vec4(diffuseLight * fragColor + specularLight * fragColor, 1.0);
     } else {

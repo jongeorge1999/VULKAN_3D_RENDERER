@@ -50,7 +50,7 @@ class Object {
         std::unique_ptr<PointLightComponent> pointLight = nullptr;
 
         bool shouldRotateY{false};
-        int useSpec{0};
+        int useSpec{1};
 
     private:
         Object(id_t objId) : id{objId} {};
