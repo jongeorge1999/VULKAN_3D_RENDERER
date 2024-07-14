@@ -4,6 +4,7 @@
 #include "Object.hpp"
 #include "Device.hpp"
 #include "Camera.hpp"
+#include "FrameInfo.hpp"
 
 #include <memory>
 #include <vector>
@@ -17,7 +18,10 @@ class RenderSystem{
         RenderSystem(const RenderSystem&) = delete;
         RenderSystem& operator=(const RenderSystem &) = delete;
 
-        void renderObjects(VkCommandBuffer commandBuffer, std::vector<Object>& objects, const Camera& camera);
+        void renderObjects(
+            FrameInfo& frameInfo,
+            std::vector<Object>& objects
+        );
 
     private:
         void createPipelineLayout();

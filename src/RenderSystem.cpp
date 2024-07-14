@@ -49,22 +49,22 @@ void RenderSystem::createPipeline(VkRenderPass renderPass) {
     pipeline = std::make_unique<Pipeline>(device, "../shaders/simple_shader.vert.spv", "../shaders/simple_shader.frag.spv", pipelineConfig);
 }
 
-void RenderSystem::renderObjects(VkCommandBuffer commandBuffer, std::vector<Object>& objects, const Camera& camera) {
-    pipeline->bind(commandBuffer);
+void RenderSystem::renderObjects(FrameInfo& frameInfo, std::vector<Object>& objects) {
+    pipeline->bind(frameInfo.commandBuffer);
 
-    auto projectionView = camera.getProjection() * camera.getView();
+    auto projectionView = frameInfo.camera.getProjection() * frameInfo.camera.getView();
 
     for (auto& obj: objects) {
-        //obj.transform.rotation.y = glm::mod(obj.transform.rotation.y + 0.0001f, glm::two_pi<float>());
-        //obj.transform.rotation.x = glm::mod(obj.transform.rotation.x + 0.00005f, glm::two_pi<float>());
+        obj.transform.rotation.y = glm::mod(obj.transform.rotation.y + 0.0005f, glm::two_pi<float>());
+        //obj.transform.rotation.x = glm::mod(obj.transform.rotation.x + 0.0001f, glm::two_pi<float>());
 
         PushConstantData push{};
         auto modelMatrix = obj.transform.mat4();
         push.transform = projectionView * modelMatrix;
         push.normalMatrix =obj.transform.normalMatrix();
 
-        vkCmdPushConstants(commandBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(PushConstantData), &push);
-        obj.model->bind(commandBuffer);
-        obj.model->draw(commandBuffer);
+        vkCmdPushConstants(frameInfo.commandBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(PushConstantData), &push);
+        obj.model->bind(frameInfo.commandBuffer);
+        obj.model->draw(frameInfo.commandBuffer);
     }
 }
