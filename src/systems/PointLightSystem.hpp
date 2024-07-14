@@ -18,6 +18,7 @@ class PointLightSystem{
         PointLightSystem(const PointLightSystem&) = delete;
         PointLightSystem& operator=(const PointLightSystem &) = delete;
 
+        void update(FrameInfo& frameinfo, globalUbo& ubo);
         void render(FrameInfo& frameInfo);
 
     private:

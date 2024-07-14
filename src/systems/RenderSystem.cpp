@@ -67,6 +67,7 @@ void RenderSystem::renderObjects(FrameInfo& frameInfo) {
 
     for (auto& kv: frameInfo.objects) {
         auto& obj = kv.second;
+        if (obj.model == nullptr) continue;
         if(obj.shouldRotateY) {
            obj.transform.rotation.y = glm::mod(obj.transform.rotation.y + 0.0005f, glm::two_pi<float>()); 
         }

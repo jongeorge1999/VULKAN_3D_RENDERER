@@ -2,11 +2,18 @@
 #include <stdexcept>
 #include <cassert>
 #include <array>
+#include <iostream>
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <glm/glm.hpp>
 #include <glm/gtc/constants.hpp>
+
+struct PointLightPushConstants {
+    glm::vec4 position{};
+    glm::vec4 color{};
+    float radius;
+};
 
 PointLightSystem::PointLightSystem(Device& device, VkRenderPass renderPass, VkDescriptorSetLayout globalSetLayout) : device{device} {
     createPipelineLayout(globalSetLayout);
@@ -18,10 +25,10 @@ PointLightSystem::~PointLightSystem() {
 }
 
 void PointLightSystem::createPipelineLayout(VkDescriptorSetLayout globalSetLayout) {
-    // VkPushConstantRange pushConstantRange{};
-    // pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
-    // pushConstantRange.offset = 0;
-    // pushConstantRange.size = sizeof(PushConstantData);
+    VkPushConstantRange pushConstantRange{};
+    pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
+    pushConstantRange.offset = 0;
+    pushConstantRange.size = sizeof(PointLightPushConstants);
 
     std::vector<VkDescriptorSetLayout> descriptorSetLayouts{globalSetLayout};
 
@@ -29,8 +36,8 @@ void PointLightSystem::createPipelineLayout(VkDescriptorSetLayout globalSetLayou
     pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
     pipelineLayoutInfo.setLayoutCount = static_cast<uint32_t>(descriptorSetLayouts.size());
     pipelineLayoutInfo.pSetLayouts = descriptorSetLayouts.data();
-    pipelineLayoutInfo.pushConstantRangeCount = 0;
-    pipelineLayoutInfo.pPushConstantRanges = nullptr;
+    pipelineLayoutInfo.pushConstantRangeCount = 1;
+    pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
     if(vkCreatePipelineLayout(device.device(), &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS) {
         throw std::runtime_error("Failed to create pipelineLayout");
     }
@@ -47,7 +54,29 @@ void PointLightSystem::createPipeline(VkRenderPass renderPass) {
     pipeline = std::make_unique<Pipeline>(
         device,
         "../shaders/compiled_shaders/point_light.vert.spv",
-        "../shaders/compiled_shaders/point_light.frag.spv", pipelineConfig);
+        "../shaders/compiled_shaders/point_light.frag.spv",
+        pipelineConfig);
+}
+
+void PointLightSystem::update(FrameInfo& frameInfo, globalUbo& ubo) {
+    auto rotateLight = glm::rotate(glm::mat4(1.f), frameInfo.frameTime, {0.f, -1.f, 0.f});
+    int lightIndex = 0;
+    for (auto& kv: frameInfo.objects) {
+        auto& obj = kv.second;
+        if(obj.pointLight == nullptr) continue;
+
+        assert(lightIndex < MAX_LIGHTS && "Too many light in one scene; Max amount of lights is " && MAX_LIGHTS);
+
+        //update light position
+        obj.transform.translation = glm::vec3(rotateLight * glm::vec4(obj.transform.translation, 1.f));
+    
+        //copy light to ubo
+        ubo.pointLights[lightIndex].position = glm::vec4(obj.transform.translation, 1.f);
+        ubo.pointLights[lightIndex].color = glm::vec4(obj.color, obj.pointLight->lightIntensity);
+
+        lightIndex += 1;
+    }
+    ubo.numLights = lightIndex;
 }
 
 void PointLightSystem::render(FrameInfo& frameInfo) {
@@ -61,7 +90,25 @@ void PointLightSystem::render(FrameInfo& frameInfo) {
         1,
         &frameInfo.globalDescriptorSet,
         0,
-        nullptr
-    );
-    vkCmdDraw(frameInfo.commandBuffer, 6, 1, 0, 0);
+        nullptr);
+
+    for (auto& kv: frameInfo.objects) {
+        auto& obj = kv.second;
+        if(obj.pointLight == nullptr) continue;
+
+        PointLightPushConstants push{};
+        push.position = glm::vec4(obj.transform.translation, 1.f);
+        push.color = glm::vec4(obj.color, obj.pointLight->lightIntensity);
+        push.radius = obj.transform.scale.x;
+
+        vkCmdPushConstants(
+            frameInfo.commandBuffer,
+            pipelineLayout,
+            VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+            0,
+            sizeof(PointLightPushConstants),
+            &push
+        );
+        vkCmdDraw(frameInfo.commandBuffer, 6, 1, 0, 0);
+    }
 }
