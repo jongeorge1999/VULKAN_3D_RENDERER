@@ -51,7 +51,7 @@ void RenderSystem::createPipeline(VkRenderPass renderPass) {
     pipeline = std::make_unique<Pipeline>(device, "../shaders/simple_shader.vert.spv", "../shaders/simple_shader.frag.spv", pipelineConfig);
 }
 
-void RenderSystem::renderObjects(FrameInfo& frameInfo, std::vector<Object>& objects) {
+void RenderSystem::renderObjects(FrameInfo& frameInfo) {
     pipeline->bind(frameInfo.commandBuffer);
 
     vkCmdBindDescriptorSets(
@@ -65,8 +65,12 @@ void RenderSystem::renderObjects(FrameInfo& frameInfo, std::vector<Object>& obje
         nullptr
     );
 
-    for (auto& obj: objects) {
-        obj.transform.rotation.y = glm::mod(obj.transform.rotation.y + 0.0005f, glm::two_pi<float>());
+    for (auto& kv: frameInfo.objects) {
+        auto& obj = kv.second;
+        if(obj.shouldRotateY) {
+           obj.transform.rotation.y = glm::mod(obj.transform.rotation.y + 0.0005f, glm::two_pi<float>()); 
+        }
+        //obj.transform.rotation.y = glm::mod(obj.transform.rotation.y + 0.0005f, glm::two_pi<float>());
         //obj.transform.rotation.x = glm::mod(obj.transform.rotation.x + 0.0001f, glm::two_pi<float>());
 
         PushConstantData push{};

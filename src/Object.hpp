@@ -5,6 +5,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include <memory>
+#include <unordered_map>
 
 struct TransformComponent {
     glm::vec3 translation{};
@@ -21,6 +22,7 @@ struct TransformComponent {
 class Object {
     public:
         using id_t = unsigned int;
+        using Map = std::unordered_map<id_t, Object>;
 
         static Object createObject() {
             static id_t currentId = 0;
@@ -37,6 +39,7 @@ class Object {
         std::shared_ptr<Model> model{};
         glm::vec3 color{};
         TransformComponent transform{};
+        bool shouldRotateY{false};
 
     private:
         Object(id_t objId) : id{objId} {};

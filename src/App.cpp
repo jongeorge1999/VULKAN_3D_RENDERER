@@ -19,7 +19,10 @@
 
 struct globalUbo {
     glm::mat4 projectionView{1.f};
-    glm::vec3 lightDirection = glm::normalize(glm::vec3{1.f, -3.f, -1.f});
+    glm::vec4 ambientLightColor{1.f, 1.f, 1.f, .02f}; // w is intensity
+    glm::vec3 lightPosition{-1.f};
+    alignas(16) glm::vec4 lightColor{1.f}; // w is light intensity
+    // alignas(16) glm::vec3 lightDirection = glm::normalize(glm::vec3{1.f, -3.f, -1.f});
 };
 
 App::App() {
@@ -46,7 +49,7 @@ void App::run() {
     }
 
     auto globalSetLayout = DescriptorSetLayout::Builder(device)
-        .addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
+        .addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS)
         .build();
     
     std::vector<VkDescriptorSet> globalDescriptorSets(SwapChain::MAX_FRAMES_IN_FLIGHT);
@@ -90,7 +93,8 @@ void App::run() {
                 frameTime,
                 commandBuffer,
                 camera,
-                globalDescriptorSets[frameIndex]
+                globalDescriptorSets[frameIndex],
+                objects
             };
 
             //update
@@ -101,7 +105,7 @@ void App::run() {
 
             //render
             renderer.beginSwapChainRenderPass(commandBuffer);
-            renderSystem.renderObjects(frameInfo, objects);
+            renderSystem.renderObjects(frameInfo);
             renderer.endSwapChainRenderPass(commandBuffer);
             renderer.endFrame();
         }
@@ -110,25 +114,33 @@ void App::run() {
 }
 
 void App::loadObjects() {
-    std::shared_ptr<Model> model = Model::createModelFromFile(device, "../models/stormtrooper.obj");
-    std::shared_ptr<Model> model2 = Model::createModelFromFile(device, "../models/smooth_vase.obj");
-    std::shared_ptr<Model> model3 = Model::createModelFromFile(device, "../models/colored_cube.obj");
+    std::shared_ptr<Model> stormtrooper = Model::createModelFromFile(device, "../models/stormtrooper.obj");
+    std::shared_ptr<Model> vase = Model::createModelFromFile(device, "../models/smooth_vase.obj");
+    std::shared_ptr<Model> colored_cube = Model::createModelFromFile(device, "../models/colored_cube.obj");
+    std::shared_ptr<Model> floor = Model::createModelFromFile(device, "../models/quad.obj");
 
-    auto object = Object::createObject();
-    object.model = model;
-    object.transform.translation = {.0f, .5f, 2.5f};
-    object.transform.scale = glm::vec3(1.0f);
-    objects.push_back(std::move(object));
+    auto floor_obj = Object::createObject();
+    floor_obj.model = floor;
+    floor_obj.transform.translation = {0.f, 0.5f, 2.5f};
+    floor_obj.transform.scale = glm::vec3(3.f, 1.f, 3.f);
+    objects.emplace(floor_obj.getId(), std::move(floor_obj));
 
-    auto object2 = Object::createObject();
-    object2.model = model2;
-    object2.transform.translation = {-2.0f, .5f, 2.5f};
-    object2.transform.scale = glm::vec3(4.0f);
-    objects.push_back(std::move(object2));
+    auto stormtrooper_obj = Object::createObject();
+    stormtrooper_obj.model = stormtrooper;
+    stormtrooper_obj.transform.translation = {.0f, .5f, 2.5f};
+    stormtrooper_obj.transform.scale = glm::vec3(1.0f);
+    stormtrooper_obj.shouldRotateY = true;
+    objects.emplace(stormtrooper_obj.getId(), std::move(stormtrooper_obj));
 
-    auto object3 = Object::createObject();
-    object3.model = model3;
-    object3.transform.translation = {2.2f, 0.0f, 2.5f};
-    object3.transform.scale = glm::vec3(0.5f);
-    objects.push_back(std::move(object3));
+    auto vase_obj = Object::createObject();
+    vase_obj.model = vase;
+    vase_obj.transform.translation = {-2.0f, .5f, 2.5f};
+    vase_obj.transform.scale = glm::vec3(4.0f);
+    objects.emplace(vase_obj.getId(), std::move(vase_obj));
+
+    auto colored_cube_obj = Object::createObject();
+    colored_cube_obj.model = colored_cube;
+    colored_cube_obj.transform.translation = {2.2f, 0.0f, 2.5f};
+    colored_cube_obj.transform.scale = glm::vec3(0.5f);
+    objects.emplace(colored_cube_obj.getId(), std::move(colored_cube_obj));
 }

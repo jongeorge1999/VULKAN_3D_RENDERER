@@ -29,5 +29,5 @@ class App{
         Renderer renderer{window, device};
 
         std::unique_ptr<DescriptorPool> globalPool{};
-        std::vector<Object> objects;
+        Object::Map objects;
 };
