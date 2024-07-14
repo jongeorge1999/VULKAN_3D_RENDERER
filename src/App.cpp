@@ -62,6 +62,7 @@ void App::run() {
 
     auto viewerObject = Object::createObject();
     KeyboardMoveController cameraController{};
+    KeyboardMoveController settingsController{};
 
     auto currentTime = std::chrono::high_resolution_clock::now();
 
@@ -76,6 +77,8 @@ void App::run() {
 
         cameraController.moveInPlaneXZ(window.getGLFWwindow(), frameTime, viewerObject);
         camera.setViewYXZ(viewerObject.transform.translation, viewerObject.transform.rotation);
+
+        settingsController.settings(window.getGLFWwindow(), frameTime, viewerObject);
 
         float aspect = renderer.getAspectRatio();
         // camera.setOrthographicProjection(-aspect,aspect,-1,1,-1,1);
@@ -94,8 +97,10 @@ void App::run() {
 
             //update
             globalUbo ubo{};
+            ubo.useSpec = viewerObject.useSpec;
             ubo.projection = camera.getProjection();
             ubo.view = camera.getView();
+            ubo.inverseView = camera.getInverseView();
             pointLightSystem.update(frameInfo, ubo);
             uboBuffers[frameIndex]->writeToBuffer(&ubo);
             uboBuffers[frameIndex]->flush();

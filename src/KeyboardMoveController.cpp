@@ -1,4 +1,6 @@
 #include "KeyboardMoveController.hpp"
+#include "FrameInfo.hpp"
+#include <iostream>
 
 void KeyboardMoveController::moveInPlaneXZ(GLFWwindow* window, float dt, Object& object) {
     glm::vec3 rotate{0};
@@ -29,5 +31,21 @@ void KeyboardMoveController::moveInPlaneXZ(GLFWwindow* window, float dt, Object&
 
     if(glm::dot(moveDir, moveDir) > std::numeric_limits<float>::epsilon()) {
         object.transform.translation += moveSpeed * dt * glm::normalize(moveDir);
+    }
+}
+
+void KeyboardMoveController::settings(GLFWwindow* window, float dt, Object& object) {
+
+    if(glfwGetKey(window, keys.specHighlight) == GLFW_PRESS && settingsJustPressed == 0) {
+        if(object.useSpec == 1) {
+            object.useSpec = 0;
+        } else {
+            object.useSpec = 1;
+        }
+        settingsJustPressed = 1;
+    }
+
+    if(glfwGetKey(window, keys.specHighlight) == GLFW_RELEASE && settingsJustPressed == 1) {
+        settingsJustPressed = 0;
     }
 }

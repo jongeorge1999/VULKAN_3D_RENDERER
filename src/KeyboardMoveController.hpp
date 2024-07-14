@@ -16,13 +16,16 @@ class KeyboardMoveController {
             int lookRight = GLFW_KEY_RIGHT;
             int lookUp = GLFW_KEY_UP;
             int lookDown = GLFW_KEY_DOWN;
+            int specHighlight = GLFW_KEY_P;
         };
 
         void moveInPlaneXZ(GLFWwindow* window, float dt, Object& object);
+        void settings(GLFWwindow* window, float dt, Object& object);
 
         KeyMappings keys{};
         float moveSpeed{3.f};
         float turnSpeed{1.5f};
+        int settingsJustPressed{0};
     private:
 
 };
