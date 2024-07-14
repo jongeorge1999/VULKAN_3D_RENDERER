@@ -1,7 +1,8 @@
 #include "App.hpp"
 #include "Camera.hpp"
 #include "KeyboardMoveController.hpp"
-#include "RenderSystem.hpp"
+#include "systems/RenderSystem.hpp"
+#include "systems/PointLightSystem.hpp"
 #include "Buffer.hpp"
 
 
@@ -18,10 +19,11 @@
 #define MAX_FRAME_TIME 16.f
 
 struct globalUbo {
-    glm::mat4 projectionView{1.f};
+    glm::mat4 projection{1.f};
+    glm::mat4 view{1.f};
     glm::vec4 ambientLightColor{1.f, 1.f, 1.f, .02f}; // w is intensity
-    glm::vec3 lightPosition{-1.f};
-    alignas(16) glm::vec4 lightColor{1.f}; // w is light intensity
+    glm::vec3 lightPosition{-1.f, -1.f, 1.f};
+    alignas(16) glm::vec4 lightColor{1.f, 1.f, 1.f, 1.4f}; // w is light intensity
     // alignas(16) glm::vec3 lightDirection = glm::normalize(glm::vec3{1.f, -3.f, -1.f});
 };
 
@@ -61,6 +63,7 @@ void App::run() {
     }
 
     RenderSystem renderSystem{device, renderer.getSwapChainRenderPass(), globalSetLayout->getDescriptorSetLayout()};
+    PointLightSystem pointLightSystem{device, renderer.getSwapChainRenderPass(), globalSetLayout->getDescriptorSetLayout()};
     Camera camera{};
     // camera.setViewDirection(glm::vec3(0.f), glm::vec3(0.5f, 0.f, 1.f));
     camera.setViewTarget(glm::vec3(-1.f, -2.f, 2.f), glm::vec3(0.f, 0.f, 2.5f));
@@ -99,13 +102,15 @@ void App::run() {
 
             //update
             globalUbo ubo{};
-            ubo.projectionView = camera.getProjection() * camera.getView();
+            ubo.projection = camera.getProjection();
+            ubo.view = camera.getView();
             uboBuffers[frameIndex]->writeToBuffer(&ubo);
             uboBuffers[frameIndex]->flush();
 
             //render
             renderer.beginSwapChainRenderPass(commandBuffer);
             renderSystem.renderObjects(frameInfo);
+            pointLightSystem.render(frameInfo);
             renderer.endSwapChainRenderPass(commandBuffer);
             renderer.endFrame();
         }

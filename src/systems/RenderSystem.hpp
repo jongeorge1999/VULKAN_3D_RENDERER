@@ -1,10 +1,10 @@
 #pragma once
 
-#include "Pipeline.hpp"
-#include "Object.hpp"
-#include "Device.hpp"
-#include "Camera.hpp"
-#include "FrameInfo.hpp"
+#include "../Pipeline.hpp"
+#include "../Object.hpp"
+#include "../Device.hpp"
+#include "../Camera.hpp"
+#include "../FrameInfo.hpp"
 
 #include <memory>
 #include <vector>
